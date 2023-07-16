@@ -35,10 +35,10 @@ class BaseModel:
 
     def __str__(self):
         """ String """
-        return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.to_dict)
+        # return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.to_dict)
 
-        # return('[' + type(self).__name__ + '] (' + str(self.id) +
-        #        ') ' + str(self.__dict__))
+        return('[' + type(self).__name__ + '] (' + str(self.id) +
+               ') ' + str(self.__dict__))
 
     def save(self):
         """ save function """
