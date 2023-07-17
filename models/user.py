@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-""" user class """
+"""
+This is User class to represent new users
+"""
 from models.base_model import BaseModel
 
-
 class User(BaseModel):
-    """ inherits from blueprint  """
+    """ User subclass that inherits from BaseModel """
     email = ""
     password = ""
     first_name = ""

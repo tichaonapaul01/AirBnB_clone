@@ -1,8 +1,15 @@
 #!/usr/bin/python3
-""" city rep """
+"""
+City module
+"""
 from models.base_model import BaseModel
 
 class City(BaseModel):
-    """ city class """
+    """
+    Class City
+    """
+
     state_id = ""
     name = ""
+
+

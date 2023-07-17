@@ -1,7 +1,9 @@
 #!/usr/bin/python3
-""" Class Amenity """
+"""
+This is amenity class that represents new amenities
+"""
 from models.base_model import BaseModel
 
 class Amenity(BaseModel):
-    """class inherits BaseModel"""
+    """ Amenity subclass that inherits from BaseModel """
     name = ""

@@ -1,7 +1,10 @@
 #!/usr/bin/python3
-""" state class """
+"""
+This is state class represents new states
+"""
 from models.base_model import BaseModel
 
+
 class State(BaseModel):
-    """ inherits from blueprint class """
+    """ State subclass that inherits from BaseModel """
     name = ""

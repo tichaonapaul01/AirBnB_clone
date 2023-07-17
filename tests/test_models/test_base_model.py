@@ -1,109 +1,147 @@
 #!/usr/bin/python3
-""" testing files """
+"""Unit test for the base class base model
+"""
 import unittest
-import inspect
+# import json
 import pep8
-from models.base_model import BaseModel
 from datetime import datetime
+# from io import StringIO
+# from unittest.mock import patch
+from models import base_model
+from models.base_model import BaseModel
+from models.engine.file_storage import FileStorage
+import os
 
 
-class BaseModel_testing(unittest.TestCase):
-    """ check BaseModel """
+class TestBaseClass(unittest.TestCase):
+    """TestBaseClass Test the base class
+    Args:
+        unittest (): Propertys for unit testing
+    """
 
-    def testpep8(self):
-        """ testing codestyle """
-        pepstylecode = pep8.StyleGuide(quiet=True)
-        rest = pepstylecode.check_files(['models/base_model.py',
-                                         'models/__init__.py',
-                                         'models/engine/file_storage.py'])
-        self.assertEqual(rest.total_errors, 0,
-                         "Found code style errors (and warnings).")
+    maxDiff = None
 
+    def setUp(self):
+        """ condition to test file saving """
+        with open("test.json", 'w'):
+            FileStorage._FileStorage__file_path = "test.json"
+            FileStorage._FileStorage__objects = {}
 
-class test_for_base_model(unittest.TestCase):
-    """ Class test for BaseModel """
-    my_model = BaseModel()
+    def tearDown(self):
+        """ destroys created file """
+        FileStorage._FileStorage__file_path = "file.json"
+        try:
+            os.remove("test.json")
+        except FileNotFoundError:
+            pass
 
-    def TearDown(self):
-        """ delete json file """
-        del self.test
+    def test_module_doc(self):
+        """ check for module documentation """
+        self.assertTrue(len(base_model.__doc__) > 0)
 
-    def SetUp(self):
-        """ Create instance """
-        self.test = BaseModel()
+    def test_class_doc(self):
+        """ check for documentation """
+        self.assertTrue(len(BaseModel.__doc__) > 0)
 
-    def test_attr_none(self):
-        """None attribute."""
-        object_test = BaseModel(None)
-        self.assertTrue(hasattr(object_test, "id"))
-        self.assertTrue(hasattr(object_test, "created_at"))
-        self.assertTrue(hasattr(object_test, "updated_at"))
+    def test_method_docs(self):
+        """ check for method documentation """
+        for func in dir(BaseModel):
+            self.assertTrue(len(func.__doc__) > 0)
 
-    def test_kwargs_constructor_2(self):
-        """ check id with data """
-        dictonary = {'score': 100}
+    def test_pep8(self):
+        """ test base and test_base for pep8 conformance """
+        style = pep8.StyleGuide(quiet=True)
+        file1 = 'models/base_model.py'
+        file2 = 'tests/test_models/test_base_model.py'
+        result = style.check_files([file1, file2])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warning).")
 
-        object_test = BaseModel(**dictonary)
-        self.assertTrue(hasattr(object_test, 'id'))
-        self.assertTrue(hasattr(object_test, 'created_at'))
-        self.assertTrue(hasattr(object_test, 'updated_at'))
-        self.assertTrue(hasattr(object_test, 'score'))
+    def test_id_type(self):
+        """ Test id type"""
+        my_third = BaseModel()
+        self.assertTrue(type(my_third.id) == str)
+
+    def test_datetime_type(self):
+        """ Test datetime type """
+        my_third = BaseModel()
+        self.assertTrue(type(my_third.created_at) == datetime)
 
     def test_str(self):
-        """ Test string """
-        dictonary = {'id': 'cc9909cf-a909-9b90-9999-999fd99ca9a9',
-                     'created_at': '2025-06-28T14:00:00.000001',
-                     '__class__': 'BaseModel',
-                     'updated_at': '2030-06-28T14:00:00.000001',
-                     'score': 100
-                     }
+        """ Test str output """
+        test = BaseModel()
+        self.assertEqual(test.__str__(), "[" + test.__class__.__name__ + "]"
+                         " (" + test.id + ") " + str(test.__dict__))
 
-        object_test = BaseModel(**dictonary)
-        out = "[{}] ({}) {}\n".format(type(object_test).__name__, object_test.id, object_test.__dict__)
+    def test_id_creation(self):
+        """ check for module documentation """
+        my_first = BaseModel()
+        my_second = BaseModel()
+        my_third = BaseModel()
+        self.assertTrue(my_first.id != my_second.id)
+        self.assertTrue(my_third.id != my_second.id)
+        self.assertTrue(my_first.id != my_third.id)
 
     def test_to_dict(self):
-        """ check dict """
-        object_test = BaseModel(score=300)
-        n_dict = object_test.to_dict()
+        """testing to dict function"""
+        test = BaseModel()
+        my_model = test.to_dict()
+        self.assertTrue(type(my_model["created_at"] == str))
+        self.assertTrue(type(my_model["updated_at"] == str))
+        self.assertTrue(type(test.created_at) == datetime)
+        self.assertTrue(type(test.updated_at) == datetime)
+        self.assertEqual(my_model["created_at"], test.created_at.isoformat())
+        self.assertEqual(my_model["updated_at"], test.updated_at.isoformat())
 
-        self.assertEqual(n_dict['id'], object_test.id)
-        self.assertEqual(n_dict['score'], 300)
-        self.assertEqual(n_dict['__class__'], 'BaseModel')
-        self.assertEqual(n_dict['created_at'], object_test.created_at.isoformat())
-        self.assertEqual(n_dict['updated_at'], object_test.updated_at.isoformat())
+    def test_base_from_dict(self):
+        """Testing task 4, with kwargs init"""
+        my_model = BaseModel()
+        my_model_json = my_model.to_dict()
+        my_new_model = BaseModel(**my_model_json)
+        self.assertEqual(my_model_json, my_new_model.to_dict())
+        self.assertTrue(type(my_new_model.id) == str)
+        self.assertTrue(type(my_new_model.created_at) == datetime)
+        self.assertTrue(type(my_new_model.updated_at) == datetime)
 
-        self.assertEqual(type(n_dict['created_at']), str)
-        self.assertEqual(type(n_dict['created_at']), str)
+    def test_base_from_emp_dict(self):
+        """test with an empty dictionary"""
+        my_dict = {}
+        my_new_model = BaseModel(**my_dict)
+        self.assertTrue(type(my_new_model.id) == str)
+        self.assertTrue(type(my_new_model.created_at) == datetime)
+        self.assertTrue(type(my_new_model.updated_at) == datetime)
 
-    def test_datetime(self):
-        """ check datatime """
-        bas1 = BaseModel()
-        self.assertFalse(datetime.now() == bas1.created_at)
+    def test_base_from_non_dict(self):
+        """test with a None dictionary"""
+        my_new_model = BaseModel(None)
+        self.assertTrue(type(my_new_model.id) == str)
+        self.assertTrue(type(my_new_model.created_at) == datetime)
+        self.assertTrue(type(my_new_model.updated_at) == datetime)
 
-    def test_BaseModel(self):
-        """ check attributes values in a BaseModel """
+    def test_save(self):
+        """ test save method of basemodel """
+        my_new_model = BaseModel()
+        previous = my_new_model.updated_at
+        my_new_model.save()
+        actual = my_new_model.updated_at
+        self.assertTrue(actual > previous)
 
-        self.my_model.name = "Holbie"
-        self.my_model.my_number = 100
-        self.my_model.save()
-        my_model_json = self.my_model.to_dict()
+    def test_isinstance(self):
+        """ Check if object is basemodel instance """
+        obj = BaseModel()
+        self.assertIsInstance(obj, BaseModel)
 
-        self.assertEqual(self.my_model.name, my_model_json['name'])
-        self.assertEqual(self.my_model.my_number, my_model_json['my_number'])
-        self.assertEqual('BaseModel', my_model_json['__class__'])
-        self.assertEqual(self.my_model.id, my_model_json['id'])
+    def test_executable_file(self):
+        """ Check if file have permissions to execute"""
+        # Check for read access
+        is_read_true = os.access('models/base_model.py', os.R_OK)
+        self.assertTrue(is_read_true)
+        # Check for write access
+        is_write_true = os.access('models/base_model.py', os.W_OK)
+        self.assertTrue(is_write_true)
+        # Check for execution access
+        is_exec_true = os.access('models/base_model.py', os.X_OK)
+        self.assertTrue(is_exec_true)
 
-    def test_savefirst(self):
-        """check numbers"""
-        with self.assertRaises(AttributeError):
-            BaseModel.save([455, 323232, 2323, 2323, 23332])
-
-    def test_savesecond(self):
-        """ check string """
-        with self.assertRaises(AttributeError):
-            BaseModel.save("THIS IS A TEST")
-
-    def test_inst(self):
-        """check class """
-        ml = BaseModel()
-        self.assertTrue(ml, BaseModel)
+if __name__ == '__main__':
+    unittest.main()
